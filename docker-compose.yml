@@ -9,4 +9,82 @@ services:
 
     command: >
       sh -c "python manage.py runserver 0.0.0.0:8000"
-      
+
+    environment:
+      - DATABASE_NAME=mydatabase
+      - DATABASE_USER=postgres
+      - DATABASE_PASSWORD=VM12012005
+      - DATABASE_HOST=database
+
+    depends_on:
+      - database
+
+  database:
+    image: postgres:16
+    environment:
+      - POSTGRES_DB=mydatabase
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=VM12012005
+
+  redis:
+    image: redis:7.0.5-alpine
+    hostname: redis
+
+  worker:
+    build:
+      context: .
+    hostname: worker
+    entrypoint: celery
+    command: -A celery_app.app worker --loglevel=info
+    volumes:
+      - ./service:/service
+    links:
+      - redis
+    depends_on:
+      - redis
+      - database
+
+    environment:
+      - DATABASE_NAME=mydatabase
+      - DATABASE_USER=postgres
+      - DATABASE_PASSWORD=VM12012005
+      - DATABASE_HOST=database
+
+
+  worker2:
+    build:
+      context: .
+    hostname: worker2
+    entrypoint: celery
+    command: -A celery_app.app worker --loglevel=info
+    volumes:
+      - ./service:/service
+    links:
+      - redis
+    depends_on:
+      - redis
+      - database
+
+    environment:
+      - DATABASE_NAME=mydatabase
+      - DATABASE_USER=postgres
+      - DATABASE_PASSWORD=VM12012005
+      - DATABASE_HOST=database
+
+
+
+  flower:
+    build:
+      context: .
+    hostname: flower
+    entrypoint: celery
+    command: -A celery_app.app flower
+    volumes:
+      - ./service:/service
+    links:
+      - redis
+    depends_on:
+      - redis
+    ports:
+      - "5555:5555"
+

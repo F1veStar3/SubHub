@@ -13,9 +13,17 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+from rest_framework import routers
 from django.contrib import admin
 from django.urls import path
+
+from services.views import SubscriptionView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
 ]
+
+router = routers.DefaultRouter()
+router.register(r'api/sub', SubscriptionView)
+
+urlpatterns += router.urls
